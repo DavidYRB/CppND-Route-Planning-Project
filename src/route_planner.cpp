@@ -1,5 +1,6 @@
 #include "route_planner.h"
 #include <algorithm>
+#include <stack>
 
 RoutePlanner::RoutePlanner(RouteModel &model, float start_x, float start_y, float end_x, float end_y): m_Model(model) {
     // Convert inputs to percentage:
@@ -10,7 +11,8 @@ RoutePlanner::RoutePlanner(RouteModel &model, float start_x, float start_y, floa
 
     // TODO 2: Use the m_Model.FindClosestNode method to find the closest nodes to the starting and ending coordinates.
     // Store the nodes you find in the RoutePlanner's start_node and end_node attributes.
-
+    start_node = &model.FindClosestNode(start_x, start_y);
+    end_node = &model.FindClosestNode(end_x, end_y);
 }
 
 
@@ -20,7 +22,7 @@ RoutePlanner::RoutePlanner(RouteModel &model, float start_x, float start_y, floa
 // - Node objects have a distance method to determine the distance to another node.
 
 float RoutePlanner::CalculateHValue(RouteModel::Node const *node) {
-
+    return node->distance(*end_node);
 }
 
 
@@ -32,7 +34,16 @@ float RoutePlanner::CalculateHValue(RouteModel::Node const *node) {
 // - For each node in current_node.neighbors, add the neighbor to open_list and set the node's visited attribute to true.
 
 void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
-
+    current_node->FindNeighbors();
+    for(auto &neighbor: current_node->neighbors){
+      if(neighbor->visited != true){
+        neighbor->parent = current_node;
+        neighbor->h_value = CalculateHValue(neighbor);
+        neighbor->g_value = current_node->g_value + current_node->distance(*neighbor);
+        neighbor->visited = true;
+        open_list.push_back(neighbor);
+      }
+    }
 }
 
 
@@ -44,9 +55,16 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
 // - Return the pointer.
 
 RouteModel::Node *RoutePlanner::NextNode() {
-
+    std::sort(open_list.begin(), open_list.end(), CompareNodes);
+    RouteModel::Node* next_node = open_list[open_list.size()-1];
+    open_list.pop_back();
+    return next_node;
 }
 
+// The CompareNodes function is used to provide a compare function for sort function
+bool RoutePlanner::CompareNodes(RouteModel::Node *node1, RouteModel::Node *node2){
+    return (node1->g_value + node1->h_value) > (node2->g_value + node2->h_value);
+}
 
 // TODO 6: Complete the ConstructFinalPath method to return the final path found from your A* search.
 // Tips:
@@ -60,9 +78,26 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
     // Create path_found vector
     distance = 0.0f;
     std::vector<RouteModel::Node> path_found;
+    std::stack<RouteModel::Node*> node_stack;
 
     // TODO: Implement your solution here.
-
+    if(current_node != end_node){
+        return path_found;
+    }
+    RouteModel::Node *temp_node = current_node;
+    while(temp_node != start_node){
+        node_stack.push(temp_node);
+        distance += temp_node->distance(*temp_node->parent);
+        temp_node = temp_node->parent;
+    }
+    // this is very important, because the while loop will stop before adding start_node into the stack.
+  	node_stack.push(temp_node);
+  	std::cout << "stack finished" << std::endl;  
+    while(!node_stack.empty()){
+        path_found.push_back(*(node_stack.top()));
+        node_stack.pop();
+    }
+    std::cout << "size of path: " << path_found.size() << std::endl;
     distance *= m_Model.MetricScale(); // Multiply the distance by the scale of the map to get meters.
     return path_found;
 
@@ -80,5 +115,18 @@ void RoutePlanner::AStarSearch() {
     RouteModel::Node *current_node = nullptr;
 
     // TODO: Implement your solution here.
-
+    current_node = start_node;
+    // need to set the start node as visited. otherwise start_node will be visited again
+    current_node->visited = true;
+    open_list.push_back(current_node);
+    while(!open_list.empty()){
+        current_node = NextNode();
+      	if(current_node == end_node){
+        	break;
+        }
+      	//std::cout << "x: " << current_node->x << "y: " << current_node->y << "\n";
+        AddNeighbors(current_node);
+    }
+    std::cout << "finish searching" << std::endl;
+    m_Model.path = ConstructFinalPath(end_node);
 }

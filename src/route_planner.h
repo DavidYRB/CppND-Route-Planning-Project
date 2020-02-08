@@ -28,6 +28,9 @@ class RoutePlanner {
 
     float distance = 0.0f;
     RouteModel &m_Model;
+
+    // compare function for sort algorithm
+    bool CompareNodes(RouteModel::Node *node1, RouteModel::Node *node2);
 };
 
 #endif
