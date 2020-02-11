@@ -15,22 +15,22 @@ class RoutePlanner {
     void AStarSearch();
 
     // The following methods have been made public so we can test them individually.
-    void AddNeighbors(RouteModel::Node *current_node);
-    float CalculateHValue(RouteModel::Node const *node);
+    void AddNeighbors(RouteModel::Node* current_node);
+    float CalculateHValue(RouteModel::Node const* node);
     std::vector<RouteModel::Node> ConstructFinalPath(RouteModel::Node *);
-    RouteModel::Node *NextNode();
+    RouteModel::Node* NextNode();
 
   private:
     // Add private variables or methods declarations here.
     std::vector<RouteModel::Node*> open_list;
-    RouteModel::Node *start_node;
-    RouteModel::Node *end_node;
+    RouteModel::Node* start_node;
+    RouteModel::Node* end_node;
 
     float distance = 0.0f;
-    RouteModel &m_Model;
+    RouteModel& m_Model;
 
     // compare function for sort algorithm
-    bool CompareNodes(RouteModel::Node *node1, RouteModel::Node *node2);
+    static bool CompareNodes(RouteModel::Node* node1, RouteModel::Node* node2);
 };
 
 #endif

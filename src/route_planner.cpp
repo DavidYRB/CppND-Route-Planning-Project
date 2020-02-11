@@ -21,7 +21,7 @@ RoutePlanner::RoutePlanner(RouteModel &model, float start_x, float start_y, floa
 // - You can use the distance to the end_node for the h value.
 // - Node objects have a distance method to determine the distance to another node.
 
-float RoutePlanner::CalculateHValue(RouteModel::Node const *node) {
+float RoutePlanner::CalculateHValue(RouteModel::Node const* node) {
     return node->distance(*end_node);
 }
 
@@ -33,7 +33,7 @@ float RoutePlanner::CalculateHValue(RouteModel::Node const *node) {
 // - Use CalculateHValue below to implement the h-Value calculation.
 // - For each node in current_node.neighbors, add the neighbor to open_list and set the node's visited attribute to true.
 
-void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
+void RoutePlanner::AddNeighbors(RouteModel::Node* current_node) {
     current_node->FindNeighbors();
     for(auto &neighbor: current_node->neighbors){
       if(neighbor->visited != true){
@@ -54,7 +54,7 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
 // - Remove that node from the open_list.
 // - Return the pointer.
 
-RouteModel::Node *RoutePlanner::NextNode() {
+RouteModel::Node* RoutePlanner::NextNode() {
     std::sort(open_list.begin(), open_list.end(), CompareNodes);
     RouteModel::Node* next_node = open_list[open_list.size()-1];
     open_list.pop_back();
@@ -62,7 +62,7 @@ RouteModel::Node *RoutePlanner::NextNode() {
 }
 
 // The CompareNodes function is used to provide a compare function for sort function
-bool RoutePlanner::CompareNodes(RouteModel::Node *node1, RouteModel::Node *node2){
+bool RoutePlanner::CompareNodes(RouteModel::Node* node1, RouteModel::Node* node2){
     return (node1->g_value + node1->h_value) > (node2->g_value + node2->h_value);
 }
 
@@ -84,7 +84,7 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
     if(current_node != end_node){
         return path_found;
     }
-    RouteModel::Node *temp_node = current_node;
+    RouteModel::Node* temp_node = current_node;
     while(temp_node != start_node){
         node_stack.push(temp_node);
         distance += temp_node->distance(*temp_node->parent);
@@ -112,7 +112,7 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 // - Store the final path in the m_Model.path attribute before the method exits. This path will then be displayed on the map tile.
 
 void RoutePlanner::AStarSearch() {
-    RouteModel::Node *current_node = nullptr;
+    RouteModel::Node* current_node = nullptr;
 
     // TODO: Implement your solution here.
     current_node = start_node;
